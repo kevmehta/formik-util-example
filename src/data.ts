@@ -25,12 +25,12 @@ export const personForm: FormData[] = [
     defaultValue: "",
     rows: 3
   },
-  // {
-  //   name: "currentAddressSameAsPermanentAddress",
-  //   label: "Current Adress same as Permanent Address",
-  //   component: "Checkbox",
-  //   defaultValue: true
-  // },
+  {
+    name: "currentAddressSameAsPermanentAddress",
+    label: "Current Adress same as Permanent Address",
+    component: "Checkbox",
+    defaultValue: true
+  },
   {
     name: "dateOfBirth",
     label: "Date Of Birth",

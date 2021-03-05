@@ -1,4 +1,4 @@
-export interface FormData {
+interface FormData1 {
   name: string;
   label: string;
   placeholder?: string;
@@ -8,6 +8,18 @@ export interface FormData {
   rows?: number;
 }
 
+interface FormData2 {
+  name: string;
+  label: string;
+  placeholder?: string;
+  isRequired?: boolean;
+  component: string;
+  defaultValue?: boolean;
+  rows?: number;
+}
+
+export type FormData = FormData1 | FormData2;
+
 export interface InitialValues {
-  [key: string]: string;
+  [key: string]: string | boolean | null;
 }

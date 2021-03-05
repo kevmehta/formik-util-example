@@ -81,6 +81,27 @@ const getInitialValue = (formData: FormData[]) => {
   return initialValue;
 };
 
+const addFieldDynamically = (
+  field: FormData,
+  setFormData: React.Dispatch<React.SetStateAction<FormData[]>>
+) => {
+  setFormData((prevState) => {
+    const _newState = [...prevState];
+    _newState.push(field);
+    return _newState;
+  });
+};
+
+const removeFieldDynamically = (
+  field: FormData,
+  setFormData: React.Dispatch<React.SetStateAction<FormData[]>>
+) => {
+  setFormData((prevState) => {
+    const _newState = prevState.filter((f) => f.name !== field.name);
+    return _newState;
+  });
+};
+
 const buildForm = (
   formikProps: FormikProps<InitialValues>,
   formData: FormData[],
@@ -91,25 +112,31 @@ const buildForm = (
     newValue: string | undefined,
     name: string
   ) => {
-    const { setFieldValue } = formikProps;
+    const { setFieldValue, values } = formikProps;
+    const oldValue = values[name];
     setFieldValue(name, newValue);
-    onChange(formikProps, newValue);
+    onChange(formikProps, newValue, oldValue, name);
   };
 
-  // const _checkboxChange = (
-  //   event: React.FormEvent<HTMLInputElement | HTMLElement | undefined>,
-  //   checked: boolean | undefined,
-  //   name: string
-  // ) => {
-  //   const { setFieldValue } = formikProps;
-  //   setFieldValue(name, checked);
-  //   onChange(formikProps, checked);
-  // };
+  const _checkboxChange = (
+    event:
+      | React.FormEvent<HTMLInputElement | HTMLElement | undefined>
+      | undefined,
+    newValue: boolean | undefined,
+    name: string
+  ) => {
+    console.log("newValue:", newValue);
+    const { setFieldValue, values } = formikProps;
+    const oldValue = values[name];
+    setFieldValue(name, newValue as boolean);
+    onChange(formikProps, newValue, oldValue, name);
+  };
 
-  const _onDateSelect = (date: Date | null | undefined, name: string) => {
-    const { setFieldValue } = formikProps;
-    setFieldValue(name, date);
-    onChange(formikProps, date);
+  const _onDateSelect = (newValue: Date | null | undefined, name: string) => {
+    const { setFieldValue, values } = formikProps;
+    const oldValue = values[name];
+    setFieldValue(name, newValue);
+    onChange(formikProps, newValue, oldValue, name);
   };
 
   return formData.map((field, index) => {
@@ -123,7 +150,7 @@ const buildForm = (
               name={name}
               label={$field.label}
               placeholder={$field.placeholder}
-              defaultValue={$field.defaultValue}
+              defaultValue={$field.defaultValue as string}
               required={$field.isRequired}
               onChange={(
                 event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -143,7 +170,7 @@ const buildForm = (
               name={name}
               label={$field.label}
               placeholder={$field.placeholder}
-              defaultValue={$field.defaultValue}
+              defaultValue={$field.defaultValue as string}
               required={$field.isRequired}
               multiline
               rows={$field.rows}
@@ -176,24 +203,25 @@ const buildForm = (
       );
     }
 
-    // if ($field.component === "CheckBox") {
-    //   return (
-    //     <Field key={index} name={$field.name}>
-    //       {({ field: { name } }: FieldProps) => (
-    //         <Checkbox
-    //           label="Checked checkbox (uncontrolled)"
-    //           defaultChecked
-    //           onChange={(
-    //             event?: React.FormEvent<
-    //               HTMLInputElement | HTMLElement | undefined
-    //             >,
-    //             checked?: boolean | undefined
-    //           ) => _checkboxChange(event, checked, name)}
-    //         />
-    //       )}
-    //     </Field>
-    //   );
-    // }
+    if ($field.component === "Checkbox") {
+      return (
+        <Field key={index} name={$field.name}>
+          {({ field: { name } }: FieldProps) => (
+            <Checkbox
+              name={name}
+              label={$field.label}
+              defaultChecked={$field.defaultValue as boolean}
+              onChange={(
+                ev?: React.FormEvent<
+                  HTMLInputElement | HTMLElement | undefined
+                >,
+                checked?: boolean | undefined
+              ) => _checkboxChange(ev, checked, name)}
+            />
+          )}
+        </Field>
+      );
+    }
 
     return null;
   });
@@ -216,9 +244,26 @@ export const FormComponent: React.FC = () => {
 
   const onChange = (
     formikProps: FormikProps<InitialValues>,
-    newValue: string | undefined
+    newValue: string | boolean | undefined,
+    oldValue: string | boolean | undefined,
+    fieldName: string
   ) => {
-    console.log("Add Your custom logic to handle onChange");
+    // Custom loigc onChange goes here
+    if (fieldName === "currentAddressSameAsPermanentAddress") {
+      const newField: FormData = {
+        name: "currentAdress",
+        label: "Current Address",
+        component: "MultiLineTextField",
+        placeholder: "Current Address",
+        defaultValue: "",
+        rows: 3
+      };
+      if (newValue === false) {
+        addFieldDynamically(newField, setFormData);
+      } else {
+        removeFieldDynamically(newField, setFormData);
+      }
+    }
   };
 
   return (
